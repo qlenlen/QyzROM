@@ -5,7 +5,7 @@ Samsung S23 Ultra 一键生成 QyzROM
 
 import os
 
-from src.custom.CscEditor import CscEditor
+from src.custom.CscEditor import CscEditor, get_csc_fp
 from src.custom.ProductDealer import ProductDealer
 from src.custom.SystemDealer import SystemDealer
 from src.custom.VendorDealer import VendorDealer
@@ -14,14 +14,13 @@ from src.image.Image import MyImage
 from src.image.ImageConverter import ImageConverter
 from src.image.ImagePacker import ImagePacker
 from src.image.ImageUnpacker import ImageUnpacker
-from src.image.VendorBoot import VendorBoot
 from tikpath import TikPath
 from src.custom import prepare, lp
 
 from src.util.utils import MyPrinter
 
 tikpath = TikPath()
-tikpath.set_project("TEST")
+tikpath.set_project("CHN")
 
 
 myprinter = MyPrinter()
@@ -32,13 +31,14 @@ PRIV_RESOURCE = tikpath.res_path_for(DEVICE)
 
 ZIP_NAME = "S9180.zip"
 
+general.clean()
+
 # 1. 提取需要的文件
 prepare.unarchive()
 
 # 2. 分门别类处理镜像
 # 2.1 avb去除
 general.deal_with_avb()
-
 
 # 2.2 内核替换
 general.replace_kernel(PRIV_RESOURCE, WORK)
@@ -52,9 +52,7 @@ general.deal_with_vendor()
 # 2.5 处理optics
 general.moveimg2project("CSC", "optics")
 ImageUnpacker("optics").unpack()
-optics_inner = "configs/carriers/TGY/conf/system/cscfeature.xml"
-fp = os.path.join(tikpath.get_content_path("optics"), optics_inner)
-CscEditor(fp).perform_tgy()
+CscEditor(get_csc_fp("CHC")).perform_chn()
 ImagePacker("optics").pack("ext")
 ImageConverter(tikpath.img_output_path("optics")).img2simg()
 
@@ -70,16 +68,14 @@ VendorDealer().perform_task()
 ImagePacker("vendor").pack("ext").out2super()
 
 ImageUnpacker("system").unpack()
-SystemDealer().perform_task()
+SystemDealer().perform_task("chn")
 ImagePacker("system").pack_ext().out2super()
 
 ImageUnpacker("product").unpack()
-ProductDealer().perform_task()
+ProductDealer().perform_task("chn")
 ImagePacker("product").pack_ext().out2super()
 
-ImageUnpacker("system_ext").unpack()
-ImagePacker("system_ext").pack_ext().out2super()
-
+MyImage("system_ext").move2super()
 MyImage("odm").move2super()
 MyImage("system_dlkm").move2super()
 MyImage("vendor_dlkm").move2super()

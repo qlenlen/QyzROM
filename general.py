@@ -1,3 +1,4 @@
+import pathlib
 from typing import Literal
 
 import os
@@ -78,3 +79,15 @@ def replace_kernel(private_resource: str, work: str):
         resource_kernel.copy_to(f"{work}/AP/kernel")
         origin_boot.repack()
         origin_boot.move2out()
+
+
+def clean():
+    """Clean the project folder"""
+    for x in pathlib.Path(tikpath.project_path).iterdir():
+        if x.is_dir():
+            if x.name == "config" or x.name == "TI_out":
+                continue
+            shutil.rmtree(x)
+        else:
+            if not x.suffix == ".zip":
+                x.unlink()

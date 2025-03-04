@@ -5,9 +5,6 @@ Samsung S23 Ultra 一键生成 QyzROM
 
 import os
 import shutil
-from http.cookiejar import Cookie
-
-from typing_extensions import Literal
 
 from src.custom.CscEditor import CscEditor
 from src.custom.ProductDealer import ProductDealer
