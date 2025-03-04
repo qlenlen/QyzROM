@@ -22,7 +22,6 @@ from src.util.utils import MyPrinter
 tikpath = TikPath()
 tikpath.set_project("CHN")
 
-
 myprinter = MyPrinter()
 
 DEVICE = "dm3q"
@@ -55,7 +54,6 @@ ImageUnpacker("optics").unpack()
 CscEditor(get_csc_fp("CHC")).perform_chn()
 ImagePacker("optics").pack("ext")
 ImageConverter(tikpath.img_output_path("optics")).img2simg()
-
 
 # 处理super
 general.moveimg2project("AP", "super")
