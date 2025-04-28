@@ -20,7 +20,7 @@ from src.custom import prepare, lp
 from src.util.utils import MyPrinter
 
 tikpath = TikPath()
-tikpath.set_project("CHN")
+tikpath.set_project("UI7")
 
 myprinter = MyPrinter()
 
@@ -43,7 +43,7 @@ general.deal_with_avb()
 general.replace_kernel(PRIV_RESOURCE, WORK)
 
 # 2.3 替换twrp
-general.replace_rec(PRIV_RESOURCE)
+pass
 
 # 2.4 处理vendor_boot
 general.deal_with_vendor()
@@ -62,18 +62,20 @@ qti_size = lp.get_qti_dynamic_partitions_size()
 device_size = lp.get_device_size()
 
 ImageUnpacker("vendor").unpack()
-VendorDealer().perform_task()
-ImagePacker("vendor").pack("ext").out2super()
+VendorDealer().perform_slim()
+ImagePacker("vendor").pack_erofs().out2super()
 
 ImageUnpacker("system").unpack()
-SystemDealer().perform_task("chn")
+SystemDealer().perform_slim("chn")
 ImagePacker("system").pack_ext().out2super()
 
 ImageUnpacker("product").unpack()
-ProductDealer().perform_task("chn")
-ImagePacker("product").pack_ext().out2super()
+ProductDealer().perform_slim("chn")
+ImagePacker("product").pack_erofs().out2super()
 
-MyImage("system_ext").move2super()
+ImageUnpacker("system_ext").unpack()
+ImagePacker("system_ext").pack_ext().out2super()
+
 MyImage("odm").move2super()
 MyImage("system_dlkm").move2super()
 MyImage("vendor_dlkm").move2super()
