@@ -1,7 +1,9 @@
 """
-Samsung S23 Ultra 一键生成 QyzROM
+Samsung S25 Ultra 一键生成 QyzROM
 国行
 """
+
+import os
 
 from src.custom.CscEditor import CscEditor, get_csc_fp, get_ff_fp
 from src.custom.ModuleDealer import ModuleDealer
@@ -9,6 +11,7 @@ from src.custom.ProductDealer import ProductDealer
 from src.custom.SystemDealer import SystemDealer
 from src.custom.VendorDealer import VendorDealer
 from src.custom.XmlEditor import FFEditor
+from src.custom.lp import SuperType
 from src.device import general
 from src.image.Image import MyImage
 from src.image.ImageConverter import ImageConverter
@@ -20,16 +23,16 @@ from src.custom import prepare, lp
 from src.util.utils import MyPrinter
 
 tikpath = TikPath()
-tikpath.set_project("UI7")
+tikpath.set_project("pa3q")
 
 myprinter = MyPrinter()
 
-DEVICE = "dm3q"
+DEVICE = "pa3q"
 AREA = "chn"
 WORK = tikpath.project_path
 PRIV_RESOURCE = tikpath.res_path_for(DEVICE)
 
-ZIP_NAME = "S9180.zip"
+ZIP_NAME = "S9380.zip"
 
 general.clean()
 
@@ -41,10 +44,10 @@ prepare.unarchive(skip_zip=True)
 general.deal_with_avb()
 
 # 2.2 内核替换
-general.replace_kernel(PRIV_RESOURCE, WORK)
+pass
 
 # 2.3 替换twrp
-general.replace_rec(PRIV_RESOURCE)
+pass
 
 # 2.4 处理vendor_boot
 general.deal_with_vboot()
@@ -62,44 +65,34 @@ ImageUnpacker("super").unpack()
 qti_size = lp.get_qti_dynamic_partitions_size()
 device_size = lp.get_device_size()
 
-ImageUnpacker("vendor").unpack()
-VendorDealer().perform_slim()
-ImagePacker("vendor").pack_erofs().out2super()
+ImageUnpacker("product_a").unpack()
+ProductDealer("product_a", "pa3q").perform_slim("chn")
+ImagePacker("product_a").pack_erofs().out2super()
 
-ImageUnpacker("system").unpack()
-SystemDealer(version="V1.1").perform_slim("chn")
-ModuleDealer("Media").perform_task()
-ModuleDealer("Binary").perform_task()
-ModuleDealer("Fonts").perform_task()
-ModuleDealer("OneDesign").perform_task()
-ModuleDealer("Preload").perform_task()
-ModuleDealer("TgyStuff").perform_task()
-ModuleDealer("BriefSupport").perform_task()
+ImageUnpacker("vendor_a").unpack()
+VendorDealer(is_aonly=False).fill_mount_point()
+ImagePacker("vendor_a").pack_erofs().out2super()
 
-FFEditor.from_toml(
-    get_ff_fp(),
-    f"{tikpath.res_path}/{DEVICE}/tasks/{AREA}/ff.toml",
-).save_xml()
+ImageUnpacker("system_a").unpack()
+SystemDealer("system_a", "pa3q").perform_slim("chn")
 
-ImagePacker("system").pack_ext().out2super()
+ModuleDealer("Binary", is_vab=True).perform_task()
+ModuleDealer("Fonts", is_vab=True).perform_task()
+ModuleDealer("Preload", is_vab=True).perform_task()
+ModuleDealer("OneDesign", is_vab=True).perform_task()
+ModuleDealer("TgyStuff", is_vab=True).perform_task()
 
-ImageUnpacker("product").unpack()
-ProductDealer().perform_slim("chn")
-ImagePacker("product").pack_erofs().out2super()
+FFEditor.from_toml(get_ff_fp(), f"{tikpath.res_path}/{DEVICE}/tasks/{AREA}/ff.toml", ).save_xml()
 
-ImageUnpacker("system_ext").unpack()
-ImagePacker("system_ext").pack_erofs().out2super()
+ImagePacker("system_a").pack_ext().out2super()
 
-MyImage("odm").move2super()
-MyImage("system_dlkm").move2super()
+MyImage("system_ext_a").move2super()
+MyImage("odm_a").move2super()
+MyImage("system_dlkm_a").move2super()
+MyImage("vendor_dlkm_a").move2super()
 
-ImageUnpacker("vendor_dlkm").unpack()
-ModuleDealer("BatteryKO").perform_task()
-ImagePacker("vendor_dlkm").pack_erofs().out2super()
-
-sh = lp.make_sh(tikpath.super, device_size, qti_size)
+sh = lp.make_sh(tikpath.super, device_size, qti_size, SuperType.VAB)
 lp.cook(sh, tikpath.super)
-ImageConverter(f"{tikpath.super}/super.img").lz4_compress(need_remove_old=True)
 
 # 3. 打包
 prepare.archive(ZIP_NAME)

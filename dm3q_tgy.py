@@ -45,7 +45,7 @@ general.replace_kernel(PRIV_RESOURCE, WORK)
 general.replace_rec(PRIV_RESOURCE)
 
 # 2.4 处理vendor_boot
-general.deal_with_vendor()
+general.deal_with_vboot()
 
 # 2.5 处理optics
 general.moveimg2project("CSC", "optics")

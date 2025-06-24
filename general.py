@@ -46,11 +46,17 @@ def replace_rec(private_resource: str):
         myprinter.print_red("No twrp recovery.img found")
 
 
-def deal_with_vendor():
+def deal_with_vboot(remove_encryption: bool = True):
     """Move vendor_boot.img to project root
     Deal with it and move it to out folder"""
     moveimg2project("AP", "vendor_boot")
-    VendorBoot().deal_with()
+    with VendorBoot() as vboot:
+        vboot.unpack()
+        vboot.remove_avb()
+        if remove_encryption:
+            vboot.remove_encryption()
+        vboot.fill_mount_point()
+        vboot.repack()
 
 
 def deal_with_optics():
@@ -85,7 +91,7 @@ def clean():
     """Clean the project folder"""
     for x in pathlib.Path(tikpath.project_path).iterdir():
         if x.is_dir():
-            if x.name == "config" or x.name == "TI_out":
+            if x.name == "config" or x.name == "TI_out" or x.name == "tars":
                 continue
             shutil.rmtree(x)
         else:
