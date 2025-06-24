@@ -12,8 +12,6 @@ from src.custom.XmlEditor import FFEditor
 from src.device import general
 from src.image.Image import MyImage
 from src.image.ImageConverter import ImageConverter
-from src.image.ImagePacker import ImagePacker
-from src.image.ImageUnpacker import ImageUnpacker
 from tikpath import TikPath
 from src.custom import prepare, lp
 
@@ -51,22 +49,25 @@ general.deal_with_vboot()
 
 # 2.5 处理optics
 general.moveimg2project("CSC", "optics")
-ImageUnpacker("optics").unpack()
+img_optics = MyImage("optics")
+img_optics.unpack()
 CscEditor(get_csc_fp("CHC")).perform_chn()
-ImagePacker("optics").pack("ext")
-ImageConverter(tikpath.img_output_path("optics")).img2simg()
+img_optics.pack_ext()
+ImageConverter(img_optics.img_output).img2simg()
 
 # 处理super
 general.moveimg2project("AP", "super")
-ImageUnpacker("super").unpack()
+MyImage("super").unpack()
 qti_size = lp.get_qti_dynamic_partitions_size()
 device_size = lp.get_device_size()
 
-ImageUnpacker("vendor").unpack()
+img_vendor = MyImage("vendor")
+img_vendor.unpack()
 VendorDealer().perform_slim()
-ImagePacker("vendor").pack_erofs().out2super()
+img_vendor.pack_erofs().out2super()
 
-ImageUnpacker("system").unpack()
+img_system = MyImage("system")
+img_system.unpack()
 SystemDealer(version="V1.1").perform_slim("chn")
 ModuleDealer("Media").perform_task()
 ModuleDealer("Binary").perform_task()
@@ -80,22 +81,21 @@ FFEditor.from_toml(
     get_ff_fp(),
     f"{tikpath.res_path}/{DEVICE}/tasks/{AREA}/ff.toml",
 ).save_xml()
+img_system.pack_ext().out2super()
 
-ImagePacker("system").pack_ext().out2super()
-
-ImageUnpacker("product").unpack()
+img_product = MyImage("product")
+img_product.unpack()
 ProductDealer().perform_slim("chn")
-ImagePacker("product").pack_erofs().out2super()
+img_product.pack_erofs().out2super()
 
-ImageUnpacker("system_ext").unpack()
-ImagePacker("system_ext").pack_erofs().out2super()
+MyImage("system_ext").unpack().pack_erofs().out2super()
 
 MyImage("odm").move2super()
 MyImage("system_dlkm").move2super()
 
-ImageUnpacker("vendor_dlkm").unpack()
+img_vendor_dlkm = MyImage("vendor_dlkm").unpack()
 ModuleDealer("BatteryKO").perform_task()
-ImagePacker("vendor_dlkm").pack_erofs().out2super()
+img_vendor_dlkm.pack_erofs().out2super()
 
 sh = lp.make_sh(tikpath.super, device_size, qti_size)
 lp.cook(sh, tikpath.super)

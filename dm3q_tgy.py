@@ -74,6 +74,7 @@ ModuleDealer("Fonts").perform_task()
 ModuleDealer("OneDesign").perform_task()
 ModuleDealer("Preload").perform_task()
 ModuleDealer("ChnComponents").perform_task()
+ModuleDealer("SmartManagerCN").perform_task()
 ModuleDealer("BriefSupport").perform_task()
 
 img_system.pack_ext().out2super()
@@ -87,7 +88,10 @@ MyImage("system_ext").unpack().pack_erofs().out2super()
 
 MyImage("odm").move2super()
 MyImage("system_dlkm").move2super()
-MyImage("vendor_dlkm").move2super()
+
+img_vendor_dlkm = MyImage("vendor_dlkm").unpack()
+ModuleDealer("BatteryKO").perform_task()
+img_vendor_dlkm.pack_erofs().out2super()
 
 sh = lp.make_sh(tikpath.super, device_size, qti_size)
 lp.cook(sh, tikpath.super)

@@ -54,26 +54,30 @@ general.deal_with_vboot()
 
 # 2.5 处理optics
 general.moveimg2project("CSC", "optics")
-ImageUnpacker("optics").unpack()
+img_optics = MyImage("optics")
+img_optics.unpack()
 CscEditor(get_csc_fp("CHC")).perform_chn()
-ImagePacker("optics").pack("ext")
-ImageConverter(tikpath.img_output_path("optics")).img2simg()
+img_optics.pack_ext()
+ImageConverter(img_optics.img_output).img2simg()
 
 # 处理super
 general.moveimg2project("AP", "super")
-ImageUnpacker("super").unpack()
+MyImage("super").unpack()
 qti_size = lp.get_qti_dynamic_partitions_size()
 device_size = lp.get_device_size()
 
-ImageUnpacker("product_a").unpack()
+img_product = MyImage("product_a")
+img_product.unpack()
 ProductDealer("product_a", "pa3q").perform_slim("chn")
-ImagePacker("product_a").pack_erofs().out2super()
+img_product.pack_erofs().move2super()
 
-ImageUnpacker("vendor_a").unpack()
+img_vendor = MyImage("vendor_a")
+img_vendor.unpack()
 VendorDealer(is_aonly=False).fill_mount_point()
-ImagePacker("vendor_a").pack_erofs().out2super()
+img_vendor.pack_erofs().out2super()
 
-ImageUnpacker("system_a").unpack()
+img_system = MyImage("system_a")
+img_system.unpack()
 SystemDealer("system_a", "pa3q").perform_slim("chn")
 
 ModuleDealer("Binary", is_vab=True).perform_task()
@@ -82,9 +86,12 @@ ModuleDealer("Preload", is_vab=True).perform_task()
 ModuleDealer("OneDesign", is_vab=True).perform_task()
 ModuleDealer("TgyStuff", is_vab=True).perform_task()
 
-FFEditor.from_toml(get_ff_fp(), f"{tikpath.res_path}/{DEVICE}/tasks/{AREA}/ff.toml", ).save_xml()
+FFEditor.from_toml(
+    get_ff_fp(),
+    f"{tikpath.res_path}/{DEVICE}/tasks/{AREA}/ff.toml",
+).save_xml()
 
-ImagePacker("system_a").pack_ext().out2super()
+img_system.pack_ext().out2super()
 
 MyImage("system_ext_a").move2super()
 MyImage("odm_a").move2super()
