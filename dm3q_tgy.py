@@ -3,34 +3,32 @@ Samsung S23 Ultra 一键生成 QyzROM
 港版
 """
 
-import os
-
-from src.custom.CscEditor import CscEditor
+from src.custom.CscEditor import CscEditor, get_csc_fp
+from src.custom.ModuleDealer import ModuleDealer
 from src.custom.ProductDealer import ProductDealer
 from src.custom.SystemDealer import SystemDealer
 from src.custom.VendorDealer import VendorDealer
 from src.device import general
 from src.image.Image import MyImage
 from src.image.ImageConverter import ImageConverter
-from src.image.ImagePacker import ImagePacker
-from src.image.ImageUnpacker import ImageUnpacker
 from tikpath import TikPath
 from src.custom import lp, prepare
 
 from src.util.utils import MyPrinter
 
 tikpath = TikPath()
-tikpath.set_project("TEST")
+tikpath.set_project("UI7")
 
 
 myprinter = MyPrinter()
 
 DEVICE = "dm3q"
+area = "tgy"
 WORK = tikpath.project_path
 PRIV_RESOURCE = tikpath.res_path_for(DEVICE)
 
 # 1. 提取需要的文件
-prepare.unarchive()
+prepare.unarchive(skip_zip=True)
 myprinter.print_yellow("1. 镜像文件提取完毕")
 
 
@@ -49,33 +47,43 @@ general.deal_with_vboot()
 
 # 2.5 处理optics
 general.moveimg2project("CSC", "optics")
-ImageUnpacker("optics").unpack()
-optics_inner = "configs/carriers/TGY/conf/system/cscfeature.xml"
-fp = os.path.join(tikpath.get_content_path("optics"), optics_inner)
-CscEditor(fp).perform_tgy()
-ImagePacker("optics").pack("ext")
-ImageConverter(tikpath.img_output_path("optics")).img2simg()
+img_optics = MyImage("optics")
+img_optics.unpack()
+CscEditor(get_csc_fp("TGY")).perform_tgy()
+img_optics.pack_ext()
+ImageConverter(img_optics.img_output).img2simg()
 
 # 处理super
 general.moveimg2project("AP", "super")
-ImageUnpacker("super").unpack()
+MyImage("super").unpack()
 qti_size = lp.get_qti_dynamic_partitions_size()
 device_size = lp.get_device_size()
 
-ImageUnpacker("vendor").unpack()
+img_vendor = MyImage("vendor")
+img_vendor.unpack()
 VendorDealer().perform_slim()
-ImagePacker("vendor").pack_erofs().out2super()
+img_vendor.pack_erofs().out2super()
 
-ImageUnpacker("system").unpack()
-SystemDealer().perform_slim("tgy").sm_cn()
-ImagePacker("system").pack_ext().out2super()
+img_system = MyImage("system")
+img_system.unpack()
+SystemDealer(version="V1.1").perform_slim("tgy")
 
-ImageUnpacker("product").unpack()
+ModuleDealer("Media").perform_task()
+ModuleDealer("Binary").perform_task()
+ModuleDealer("Fonts").perform_task()
+ModuleDealer("OneDesign").perform_task()
+ModuleDealer("Preload").perform_task()
+ModuleDealer("ChnComponents").perform_task()
+ModuleDealer("BriefSupport").perform_task()
+
+img_system.pack_ext().out2super()
+
+img_product = MyImage("product")
+img_product.unpack()
 ProductDealer().perform_slim(region="tgy")
-ImagePacker("product").pack_ext().out2super()
+img_product.pack_erofs().out2super()
 
-ImageUnpacker("system_ext").unpack()
-ImagePacker("system_ext").pack_ext().out2super()
+MyImage("system_ext").unpack().pack_erofs().out2super()
 
 MyImage("odm").move2super()
 MyImage("system_dlkm").move2super()
