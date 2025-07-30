@@ -70,7 +70,7 @@ SystemDealer(version="V1.1").perform_slim("tgy")
 
 ModuleDealer("Media").perform_task()
 ModuleDealer("Binary").perform_task()
-ModuleDealer("Fonts").perform_task()
+ModuleDealer("Fonts_10").perform_task()
 ModuleDealer("OneDesign").perform_task()
 ModuleDealer("Preload").perform_task()
 ModuleDealer("ChnComponents").perform_task()

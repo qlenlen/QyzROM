@@ -50,7 +50,7 @@ pass
 pass
 
 # 2.4 处理vendor_boot
-general.deal_with_vboot()
+general.deal_with_vboot(remove_encryption=False)
 
 # 2.5 处理optics
 general.moveimg2project("CSC", "optics")
@@ -69,11 +69,11 @@ device_size = lp.get_device_size()
 img_product = MyImage("product_a")
 img_product.unpack()
 ProductDealer("product_a", "pa3q").perform_slim("chn")
-img_product.pack_erofs().move2super()
+img_product.pack_erofs().out2super()
 
 img_vendor = MyImage("vendor_a")
 img_vendor.unpack()
-VendorDealer(is_aonly=False).fill_mount_point()
+VendorDealer(is_aonly=False).fill_mount_point().remove_avb()
 img_vendor.pack_erofs().out2super()
 
 img_system = MyImage("system_a")
@@ -81,7 +81,7 @@ img_system.unpack()
 SystemDealer("system_a", "pa3q").perform_slim("chn")
 
 ModuleDealer("Binary", is_vab=True).perform_task()
-ModuleDealer("Fonts", is_vab=True).perform_task()
+ModuleDealer("Fonts_V2", is_vab=True).perform_task()
 ModuleDealer("Preload", is_vab=True).perform_task()
 ModuleDealer("OneDesign", is_vab=True).perform_task()
 ModuleDealer("TgyStuff", is_vab=True).perform_task()
