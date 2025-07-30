@@ -1,4 +1,4 @@
-name: Build QyzROM
+name: Build QyzROM For S9180
 
 on:
   workflow_dispatch:
