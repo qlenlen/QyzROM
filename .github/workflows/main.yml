@@ -23,7 +23,7 @@ jobs:
         with:
           repository: qlenlen/TIK_mine
           ref: master
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.TOKEN }}
           path: qyz
           submodules: 'recursive'
 
