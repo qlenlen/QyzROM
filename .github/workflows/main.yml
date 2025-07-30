@@ -68,7 +68,16 @@ jobs:
 
       - name: Download firmware
         run: |
-          ./scripts/download_fw.sh --ignore-source --ignore-target SM-S9180_CHC
+          git clone https://github.com/keklick1337/gnsf.git
+          cd gnsf
+          pip install -r requirements.txt
+          ./gnsf.py -m SM-S9180 -r CHC check
+          ./gnsf.py \
+            -m SM-S9180 \
+            -r CHC \
+            -s R5CW139E77Z \
+            download \
+            -O ./downloads
 
       - name: Build ROM
         run: |
