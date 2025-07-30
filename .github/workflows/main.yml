@@ -85,6 +85,7 @@ jobs:
       - name: Build ROM
         run: |
           cd qyz
+          export PYTHONPATH=$(pwd)
           python src/device/dm3q_chn.py
 
       - name: Upload to GoFile
