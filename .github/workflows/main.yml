@@ -70,7 +70,7 @@ jobs:
         run: |
           git clone https://github.com/keklick1337/gnsf.git
           cd gnsf
-          mkdir -p ../qyz/UI7/tars
+          mkdir -p ../qyz/UI7
           pip install -r requirements.txt
           ./gnsf.py -m SM-S9180 -r CHC check
           ./gnsf.py \
@@ -78,12 +78,13 @@ jobs:
             -r CHC \
             -s R5CW139E77Z \
             download \
-            -O ../qyz/UI7/tars
-          ls ../qyz/UI7/tars
+            -O ../qyz/UI7
+          ls ../qyz/UI7
           cd ..
 
       - name: Build ROM
         run: |
+          cd src
           python qyz/src/device/dm3q_chn.py
 
       - name: Upload to GoFile
