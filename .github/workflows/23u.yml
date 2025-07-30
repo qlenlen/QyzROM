@@ -80,7 +80,7 @@ jobs:
       - name: Upload to GoFile
         id: upload
         run: |
-          ZIP_FILE=$(find qyz/out -maxdepth 1 -type f -name "*.zip" | head -n 1)
+          ZIP_FILE=$(find qyz/UI7 -maxdepth 1 -type f -name "*.zip" | head -n 1)
           if [ -z "$ZIP_FILE" ]; then
             echo "No ZIP file found!"
             exit 1
