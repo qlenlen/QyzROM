@@ -32,7 +32,7 @@ ZIP_NAME = "S9180.zip"
 general.clean()
 
 # 1. 提取需要的文件
-prepare.unarchive(skip_zip=True)
+prepare.unarchive(skip_zip=False)
 
 # 2. 分门别类处理镜像
 # 2.1 avb去除
