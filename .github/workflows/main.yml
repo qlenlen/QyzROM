@@ -70,6 +70,7 @@ jobs:
         run: |
           git clone https://github.com/keklick1337/gnsf.git
           cd gnsf
+          mkdir -p ../qyz/UI7/tars
           pip install -r requirements.txt
           ./gnsf.py -m SM-S9180 -r CHC check
           ./gnsf.py \
@@ -77,7 +78,9 @@ jobs:
             -r CHC \
             -s R5CW139E77Z \
             download \
-            -O ./downloads
+            -O ../qyz/UI7/tars
+          ls ../qyz/UI7/tars
+          cd ..
 
       - name: Build ROM
         run: |
