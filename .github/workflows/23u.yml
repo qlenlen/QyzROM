@@ -6,7 +6,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-24.04
+    runs-on: fedora-42
 
     strategy:
       fail-fast: false
@@ -50,14 +50,8 @@ jobs:
 
       - name: Set up build environment
         run: |
-          sudo apt update
-          DEBIAN_FRONTEND=noninteractive
-          sudo apt install -yq \
-            jq attr ccache clang ffmpeg golang \
-            libbrotli-dev libgtest-dev libprotobuf-dev libunwind-dev libpcre2-dev \
-            libzstd-dev linux-modules-extra-$(uname -r) lld jq protobuf-compiler pcre2-utils webp \
-            curl xxd patchelf flex bison libarchive-tools build-essential python3.12-venv device-tree-compiler \
-            lz4 cpio
+          sudo dnf -y update
+          sudo dnf -y install curl xxd patchelf flex lz4 cpio tar zip
           git config --global user.name "github-actions[bot]"
           git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
