@@ -60,11 +60,10 @@ jobs:
           mkdir -p ../qyz/UI7
           pip install -r requirements.txt
           
-          ROM_VERSION=$(./gnsf.py -m SM-S9180 -r CHC check)
+          ROM_VERSION=$(./gnsf.py -m SM-S9180 -r CHC check | grep -oP 'Firmware:\s*\K\S+' | cut -d'/' -f1)
           echo "ROM Version: $ROM_VERSION"
           echo "ROM_VERSION=$ROM_VERSION" >> $GITHUB_ENV
           
-          ./gnsf.py -m SM-S9180 -r CHC check
           ./gnsf.py \
             -m SM-S9180 \
             -r CHC \
@@ -90,8 +89,11 @@ jobs:
             echo "No ZIP file found!"
             exit 1
           fi
-
-          RESPONSE=$(curl -s -F "file=@$ZIP_FILE" -F "token=${{ secrets.GOFILE_TOKEN }}" -F "folderId=${{ secrets.GOFILE_FOLDER_ID }}" "https://upload-eu-par.gofile.io/uploadFile")
+      
+          NEW_ZIP_NAME="QyzROM_CHC_${{ env.ROM_VERSION }}.zip"
+          mv "$ZIP_FILE" "qyz/UI7/$NEW_ZIP_NAME"
+      
+          RESPONSE=$(curl -s -F "file=@qyz/UI7/$NEW_ZIP_NAME" -F "token=${{ secrets.GOFILE_TOKEN }}" -F "folderId=${{ secrets.GOFILE_FOLDER_ID }}" "https://upload-eu-par.gofile.io/uploadFile")
           URL=$(echo "$RESPONSE" | jq -r '.data.downloadPage')
           echo "download_url=$URL" >> $GITHUB_OUTPUT
 
@@ -100,8 +102,8 @@ jobs:
         with:
           allowUpdates: true
           removeArtifacts: true
-          name: ${{ env.ROM_VERSION }}
-          tag: "v${{ env.ROM_VERSION }}"
+          name: "QyzROM_CHC_${{ env.ROM_VERSION }}"
+          tag: ${{ env.ROM_VERSION }}
           body: |
             这是一个自动构建的ROM，适用于三星 Galaxy S9180（DM3Q）设备
 
