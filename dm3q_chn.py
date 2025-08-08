@@ -73,7 +73,8 @@ img_vendor = MyImage("vendor")
 img_vendor.unpack()
 VendorDealer().perform_slim()
 img_vendor.pack_erofs().out2super()
-img_vendor.unlink()
+if RUN_EXTRA_STEPS:
+    MyImage("super").unlink().rm_content()
 
 img_system = MyImage("system")
 img_system.unpack()
@@ -93,15 +94,14 @@ FFEditor.from_toml(
 img_system.pack_ext().out2super()
 
 if RUN_EXTRA_STEPS:
-    img_system.unlink()
-    shutil.rmtree(tikpath.get_content_path("system"))
+    img_system.unlink().rm_content()
 
 img_product = MyImage("product")
 img_product.unpack()
 ProductDealer().perform_slim("chn")
 img_product.pack_erofs().out2super()
 if RUN_EXTRA_STEPS:
-    img_product.unlink()
+    img_product.unlink().rm_content()
 
 MyImage("system_ext").unpack().pack_erofs().out2super()
 if RUN_EXTRA_STEPS:
@@ -113,6 +113,7 @@ MyImage("system_dlkm").move2super()
 img_vendor_dlkm = MyImage("vendor_dlkm").unpack()
 ModuleDealer("BatteryKO").perform_task()
 img_vendor_dlkm.pack_erofs().out2super()
+img_vendor_dlkm.unlink().rm_content()
 
 sh = lp.make_sh(tikpath.super, device_size, qti_size)
 lp.cook(sh, tikpath.super)
@@ -122,6 +123,7 @@ if RUN_EXTRA_STEPS:
         if not item.name.startswith("super"):
             if not item.is_dir():
                 item.unlink()
+                myprinter.print_cyan(f"{item.name} removed from super directory")
 ImageConverter(f"{tikpath.super}/super.img").lz4_compress(need_remove_old=True)
 
 # 3. 打包
