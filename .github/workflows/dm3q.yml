@@ -61,6 +61,7 @@ jobs:
           pip install -r requirements.txt
           
           ROM_VERSION=$(./gnsf.py -m SM-S9180 -r CHC check)
+          echo "ROM Version: $ROM_VERSION"
           echo "ROM_VERSION=$ROM_VERSION" >> $GITHUB_ENV
           
           ./gnsf.py -m SM-S9180 -r CHC check
