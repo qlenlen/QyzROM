@@ -74,7 +74,7 @@ img_vendor.unpack()
 VendorDealer().perform_slim()
 img_vendor.pack_erofs().out2super()
 if RUN_EXTRA_STEPS:
-    MyImage("super").unlink().rm_content()
+    img_vendor.unlink().rm_content()
 
 img_system = MyImage("system")
 img_system.unpack()
