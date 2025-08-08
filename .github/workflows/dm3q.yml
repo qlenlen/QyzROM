@@ -1,5 +1,8 @@
 name: Build QyzROM For S9180
 
+permissions:
+  contents: write
+
 on:
   workflow_dispatch:
   push:
@@ -106,6 +109,7 @@ jobs:
           tag: ${{ env.ROM_VERSION }}
           body: |
             这是一个自动构建的ROM，适用于三星 Galaxy S9180（DM3Q）设备
+            内核为 KernelSU-Next GKI 需安装apk以激活root权限
 
             **下载链接**: ${{ steps.upload.outputs.download_url }}
 
