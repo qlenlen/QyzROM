@@ -59,6 +59,10 @@ jobs:
           cd gnsf
           mkdir -p ../qyz/UI7
           pip install -r requirements.txt
+          
+          ROM_VERSION=$(./gnsf.py -m SM-S9180 -r CHC check)
+          echo "ROM_VERSION=$ROM_VERSION" >> $GITHUB_ENV
+          
           ./gnsf.py -m SM-S9180 -r CHC check
           ./gnsf.py \
             -m SM-S9180 \
@@ -91,15 +95,15 @@ jobs:
           echo "download_url=$URL" >> $GITHUB_OUTPUT
 
       - name: Create a new release with GoFile link
-        uses: softprops/action-gh-release@v2
+        uses: ncipollo/release-action@v1
         with:
-          name: QyzROM ${{ github.run_number }}
-          tag_name: qyzrom-${{ github.run_number }}
+          allowUpdates: true
+          removeArtifacts: true
+          name: ${{ env.ROM_VERSION }}
+          tag: "v${{ env.ROM_VERSION }}"
           body: |
-            自动构建发布
+            这是一个自动构建的ROM，适用于三星 Galaxy S9180（DM3Q）设备
 
             **下载链接**: ${{ steps.upload.outputs.download_url }}
 
             > WARNING! THESE BUILDS MAY NOT BOOTABLE, ONLY FLASH FOR TESTING PURPOSES ONLY IF THE DEVELOPER TOLD YOU.
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
