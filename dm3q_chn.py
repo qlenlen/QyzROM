@@ -4,6 +4,8 @@ Samsung S23 Ultra 一键生成 QyzROM
 """
 
 import os
+import pathlib
+import shutil
 
 RUN_EXTRA_STEPS = os.getenv("RUN_EXTRA_STEPS") == "1"
 
@@ -83,7 +85,6 @@ ModuleDealer("OneDesign").perform_task()
 ModuleDealer("Preload").perform_task()
 ModuleDealer("TgyStuff").perform_task()
 ModuleDealer("BriefSupport").perform_task()
-img_system.unlink()
 
 FFEditor.from_toml(
     get_ff_fp(),
@@ -91,13 +92,20 @@ FFEditor.from_toml(
 ).save_xml()
 img_system.pack_ext().out2super()
 
+if RUN_EXTRA_STEPS:
+    img_system.unlink()
+    shutil.rmtree(tikpath.get_content_path("system"))
+
 img_product = MyImage("product")
 img_product.unpack()
 ProductDealer().perform_slim("chn")
 img_product.pack_erofs().out2super()
-img_product.unlink()
+if RUN_EXTRA_STEPS:
+    img_product.unlink()
 
 MyImage("system_ext").unpack().pack_erofs().out2super()
+if RUN_EXTRA_STEPS:
+    shutil.rmtree(tikpath.get_content_path("system_ext"))
 
 MyImage("odm").move2super()
 MyImage("system_dlkm").move2super()
@@ -108,6 +116,12 @@ img_vendor_dlkm.pack_erofs().out2super()
 
 sh = lp.make_sh(tikpath.super, device_size, qti_size)
 lp.cook(sh, tikpath.super)
+# 清理super目录 只保留super.img
+if RUN_EXTRA_STEPS:
+    for item in pathlib.Path(tikpath.super).iterdir():
+        if not item.name.startswith("super"):
+            if not item.is_dir():
+                item.unlink()
 ImageConverter(f"{tikpath.super}/super.img").lz4_compress(need_remove_old=True)
 
 # 3. 打包
