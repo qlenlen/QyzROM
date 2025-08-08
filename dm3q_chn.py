@@ -111,4 +111,4 @@ lp.cook(sh, tikpath.super)
 ImageConverter(f"{tikpath.super}/super.img").lz4_compress(need_remove_old=True)
 
 # 3. 打包
-prepare.archive(ZIP_NAME)
+prepare.archive(ZIP_NAME, need_remove_img=RUN_EXTRA_STEPS)
