@@ -1,5 +1,5 @@
 """
-Samsung S23 Ultra 一键生成 QyzROM
+Samsung S23 Series 一键生成 QyzROM
 国行
 """
 
