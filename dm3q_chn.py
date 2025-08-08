@@ -3,6 +3,10 @@ Samsung S23 Ultra 一键生成 QyzROM
 国行
 """
 
+import os
+
+RUN_EXTRA_STEPS = os.getenv("RUN_EXTRA_STEPS") == "1"
+
 from src.custom.CscEditor import CscEditor, get_csc_fp, get_ff_fp
 from src.custom.ModuleDealer import ModuleDealer
 from src.custom.ProductDealer import ProductDealer
@@ -32,7 +36,7 @@ ZIP_NAME = "S9180.zip"
 general.clean()
 
 # 1. 提取需要的文件
-prepare.unarchive(skip_zip=False)
+prepare.unarchive(skip_zip=False, remove_tars=RUN_EXTRA_STEPS)
 
 # 2. 分门别类处理镜像
 # 2.1 avb去除
@@ -60,22 +64,26 @@ general.moveimg2project("AP", "super")
 MyImage("super").unpack()
 qti_size = lp.get_qti_dynamic_partitions_size()
 device_size = lp.get_device_size()
+if RUN_EXTRA_STEPS:
+    MyImage("super").unlink()
 
 img_vendor = MyImage("vendor")
 img_vendor.unpack()
 VendorDealer().perform_slim()
 img_vendor.pack_erofs().out2super()
+img_vendor.unlink()
 
 img_system = MyImage("system")
 img_system.unpack()
 SystemDealer(version="V1.1").perform_slim("chn")
 ModuleDealer("Media").perform_task()
 ModuleDealer("Binary").perform_task()
-ModuleDealer("Fonts").perform_task()
+ModuleDealer("Fonts_V2").perform_task()
 ModuleDealer("OneDesign").perform_task()
 ModuleDealer("Preload").perform_task()
 ModuleDealer("TgyStuff").perform_task()
 ModuleDealer("BriefSupport").perform_task()
+img_system.unlink()
 
 FFEditor.from_toml(
     get_ff_fp(),
@@ -87,6 +95,7 @@ img_product = MyImage("product")
 img_product.unpack()
 ProductDealer().perform_slim("chn")
 img_product.pack_erofs().out2super()
+img_product.unlink()
 
 MyImage("system_ext").unpack().pack_erofs().out2super()
 
