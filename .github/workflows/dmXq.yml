@@ -130,7 +130,7 @@ jobs:
           echo "**${{ needs.build.outputs.device_name[2] }}**" >> release_body.md
           echo "下载链接: ${{ needs.build.outputs.download_url[2] }}" >> release_body.md
           echo "" >> release_body.md
-          echo "内核为 KernelSU-Next GKI 需安装 apk 以激活 root 权限" >> release_body.md
+          echo "内核为 KernelSU LKM 需安装 官方apk 以激活 root 权限" >> release_body.md
           echo "" >> release_body.md
           echo "> WARNING! THESE BUILDS MAY NOT BOOTABLE, ONLY FLASH FOR TESTING PURPOSES ONLY IF THE DEVELOPER TOLD YOU." >> release_body.md
 
@@ -142,4 +142,5 @@ jobs:
           name: "QyzROM_CHC_${{ needs.build.outputs.rom_version[0] }}"
           tag: ${{ needs.build.outputs.rom_version[0] }}
           bodyFile: release_body.md
+
 
