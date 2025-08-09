@@ -1,0 +1,65 @@
+name: Download S24 vendor_boot.img
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  get_vendor_boot:
+    runs-on: ubuntu-latest
+    env:
+      MODEL: SM-S9280
+      REGION: CHC
+      DEVICE_SERIAL: R5CWC3WXAHR
+    steps:
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+    
+      - name: Download rom
+        run: |
+          git clone https://github.com/keklick1337/gnsf.git
+          cd gnsf
+          pip install -r requirements.txt
+
+          ./gnsf.py \
+            -m $MODEL \
+            -r $REGION \
+            -s $DEVICE_SERIAL \
+            download \
+            -O ../
+          cd ..
+
+      - name: Extract vendor_boot.img
+        run: |
+          ZIP_FILE=$(find . -maxdepth 1 -type f -name "*.zip" | head -n 1)
+          if [ -z "$ZIP_FILE" ]; then
+            echo "No ZIP file found!"
+            exit 1
+          fi
+          mkdir -p extracted
+          unzip -o "$ZIP_FILE" -d extracted
+
+          # Find AP*.tar.md5 (or AP*.tar) in extracted dir
+          AP_TAR=$(find extracted -type f -name "AP*.tar*" | head -n 1)
+          if [ -z "$AP_TAR" ]; then
+            echo "No AP tar file found!"
+            exit 1
+          fi
+
+          mkdir -p vendor_boot
+          tar -xf "$AP_TAR" -C vendor_boot vendor_boot.img
+
+          if [ ! -f vendor_boot/vendor_boot.img ]; then
+            echo "vendor_boot.img not found!"
+            exit 1
+          fi
+
+      - name: Upload vendor_boot.img as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: vendor_boot_S24
+          path: vendor_boot/vendor_boot.img
