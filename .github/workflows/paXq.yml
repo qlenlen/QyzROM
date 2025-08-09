@@ -1,4 +1,4 @@
-name: Build QyzROM for S23 Series
+name: Build QyzROM for S25 Series
 
 permissions:
   contents: write
@@ -142,3 +142,4 @@ jobs:
           name: "QyzROM_CHC_${{ needs.build.outputs.rom_version[0] }}"
           tag: ${{ needs.build.outputs.rom_version[0] }}
           bodyFile: release_body.md
+
