@@ -114,11 +114,15 @@ jobs:
 
       - name: Save release info
         run: |
+          name='${{ env.DEVICE_NAME }}'
+          url='${{ steps.upload.outputs.download_url }}'
+          model='${{ env.MODEL }}'
+          rom='${{ env.ROM_VERSION }}'
           {
-            echo "name=${{ env.DEVICE_NAME }}";
-            echo "url=${{ steps.upload.outputs.download_url }}";
-            echo "model=${{ env.MODEL }}";
-            echo "rom_version=${{ env.ROM_VERSION }}";
+            printf "name=%q\n" "$name"
+            printf "url=%q\n" "$url"
+            printf "model=%q\n" "$model"
+            printf "rom_version=%q\n" "$rom"
           } > "release-info-${{ env.MODEL }}.env"
 
       - name: Upload release info artifact
@@ -179,3 +183,4 @@ jobs:
           tag: ${{ steps.gen.outputs.rom_version }}
           bodyFile: release_body.md
           token: ${{ secrets.GITHUB_TOKEN }}
+
