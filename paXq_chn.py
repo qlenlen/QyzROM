@@ -69,8 +69,7 @@ general.moveimg2project("AP", "super")
 MyImage("super").unpack()
 qti_size = lp.get_qti_dynamic_partitions_size()
 device_size = lp.get_device_size()
-if RUN_EXTRA_STEPS:
-    MyImage("super").unlink()
+MyImage("super").unlink()
 
 img_product = MyImage("product_a")
 img_product.unpack()
