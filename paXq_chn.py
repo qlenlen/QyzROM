@@ -38,7 +38,7 @@ ZIP_NAME = "S9380.zip"
 general.clean()
 
 # 1. 提取需要的文件
-prepare.unarchive(skip_zip=False, remove_tars=RUN_EXTRA_STEPS)
+prepare.unarchive(skip_zip=not RUN_EXTRA_STEPS, remove_tars=RUN_EXTRA_STEPS)
 
 # 2. 分门别类处理镜像
 # 2.1 avb去除
@@ -74,7 +74,7 @@ if RUN_EXTRA_STEPS:
 
 img_product = MyImage("product_a")
 img_product.unpack()
-ProductDealer("product_a", "pa3q").perform_slim("chn")
+ProductDealer("product_a", DEVICE).perform_slim("chn")
 img_product.pack_erofs().out2super()
 if RUN_EXTRA_STEPS:
     img_product.unlink().rm_content()
