@@ -5,7 +5,6 @@ Samsung S25 Ultra 一键生成 QyzROM
 
 import os
 import pathlib
-import shutil
 
 RUN_EXTRA_STEPS = os.getenv("RUN_EXTRA_STEPS") == "1"
 
@@ -19,8 +18,6 @@ from src.custom.lp import SuperType
 from src.device import general
 from src.image.Image import MyImage
 from src.image.ImageConverter import ImageConverter
-from src.image.ImagePacker import ImagePacker
-from src.image.ImageUnpacker import ImageUnpacker
 from tikpath import TikPath
 from src.custom import prepare, lp
 

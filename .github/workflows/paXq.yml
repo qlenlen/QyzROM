@@ -1,4 +1,4 @@
-name: Build QyzROM for S25 Series
+name: Build QyzROM for S23 Series
 
 permissions:
   contents: write
@@ -8,28 +8,29 @@ on:
 
 jobs:
   build:
-    runs-on: Ubuntu-latest
+    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
         device:
           - model: SM-S9310
             name: S25 (SM-S9310)
-            desc: 三星 Galaxy S9310 (PA1Q)
-            serial: RFCW81DHWWP
+            serial: RFCY20VQ43N
           - model: SM-S9360
             name: S25+ (SM-S9360)
-            desc: 三星 Galaxy S9360 (PA2Q)
-            serial: R5CW23450PZ
+            serial: R5CY10P754D
           - model: SM-S9380
             name: S25 Ultra (SM-S9380)
-            desc: 三星 Galaxy S9380 (PA3Q)
-            serial: R5CW139E77Z
+            serial: R5CY13677GE
+
+    outputs:
+      device_name: ${{ matrix.device.name }}
+      download_url: ${{ steps.upload.outputs.download_url }}
+      rom_version: ${{ env.ROM_VERSION }}
 
     env:
       MODEL: ${{ matrix.device.model }}
       DEVICE_NAME: ${{ matrix.device.name }}
-      DEVICE_DESC: ${{ matrix.device.desc }}
       DEVICE_SERIAL: ${{ matrix.device.serial }}
 
     steps:
@@ -76,20 +77,18 @@ jobs:
         run: |
           git clone https://github.com/keklick1337/gnsf.git
           cd gnsf
-          mkdir -p ../qyz/UI7
+          mkdir -p ../qyz/pa3q
           pip install -r requirements.txt
-          
           ROM_VERSION=$(./gnsf.py -m $MODEL -r CHC check | grep -oP 'Firmware:\s*\K\S+' | cut -d'/' -f1)
           echo "ROM Version: $ROM_VERSION"
           echo "ROM_VERSION=$ROM_VERSION" >> $GITHUB_ENV
-          
           ./gnsf.py \
             -m $MODEL \
             -r CHC \
             -s $DEVICE_SERIAL \
             download \
-            -O ../qyz/UI7
-          ls ../qyz/UI7
+            -O ../qyz/pa3q
+          ls ../qyz/pa3q
           cd ..
 
       - name: Build ROM
@@ -98,35 +97,48 @@ jobs:
         run: |
           cd qyz
           export PYTHONPATH=$(pwd)
-          python src/device/dmXq_chn.py
+          python src/device/paXq_chn.py
 
       - name: Upload to GoFile
         id: upload
         run: |
-          ZIP_FILE=$(find qyz/UI7 -maxdepth 1 -type f -name "*.zip" | head -n 1)
+          ZIP_FILE=$(find qyz/pa3q -maxdepth 1 -type f -name "*.zip" | head -n 1)
           if [ -z "$ZIP_FILE" ]; then
             echo "No ZIP file found!"
             exit 1
           fi
-          
-          NEW_ZIP_NAME="QyzROM_CHC_${{ env.ROM_VERSION }}.zip"
-          mv "$ZIP_FILE" "qyz/UI7/$NEW_ZIP_NAME"
-          
-          RESPONSE=$(curl -s -F "file=@qyz/UI7/$NEW_ZIP_NAME" -F "token=${{ secrets.GOFILE_TOKEN }}" -F "folderId=${{ secrets.GOFILE_FOLDER_ID }}" "https://upload-eu-par.gofile.io/uploadFile")
+          NEW_ZIP_NAME="QyzROM_CHC_${{ env.ROM_VERSION }}_${{ env.MODEL }}.zip"
+          mv "$ZIP_FILE" "qyz/pa3q/$NEW_ZIP_NAME"
+          RESPONSE=$(curl -s -F "file=@qyz/pa3q/$NEW_ZIP_NAME" -F "token=${{ secrets.GOFILE_TOKEN }}" -F "folderId=dmXq" "https://upload-eu-par.gofile.io/uploadFile")
           URL=$(echo "$RESPONSE" | jq -r '.data.downloadPage')
           echo "download_url=$URL" >> $GITHUB_OUTPUT
 
-      - name: Create a new release with GoFile link
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate release body
+        run: |
+          echo "这是一个自动构建的ROM，适用于 S23 系列以下机型：" > release_body.md
+          echo "" >> release_body.md
+          echo "**${{ needs.build.outputs.device_name[0] }}**" >> release_body.md
+          echo "下载链接: ${{ needs.build.outputs.download_url[0] }}" >> release_body.md
+          echo "" >> release_body.md
+          echo "**${{ needs.build.outputs.device_name[1] }}**" >> release_body.md
+          echo "下载链接: ${{ needs.build.outputs.download_url[1] }}" >> release_body.md
+          echo "" >> release_body.md
+          echo "**${{ needs.build.outputs.device_name[2] }}**" >> release_body.md
+          echo "下载链接: ${{ needs.build.outputs.download_url[2] }}" >> release_body.md
+          echo "" >> release_body.md
+          echo "内核为 KernelSU-Next GKI 需安装 apk 以激活 root 权限" >> release_body.md
+          echo "" >> release_body.md
+          echo "> WARNING! THESE BUILDS MAY NOT BOOTABLE, ONLY FLASH FOR TESTING PURPOSES ONLY IF THE DEVELOPER TOLD YOU." >> release_body.md
+
+      - name: Create unified release
         uses: ncipollo/release-action@v1
         with:
           allowUpdates: true
           removeArtifacts: true
-          name: "QyzROM_CHC_${{ env.ROM_VERSION }}"
-          tag: ${{ env.ROM_VERSION }}
-          body: |
-            这是一个自动构建的ROM，适用于${{ env.DEVICE_DESC }}
-            内核为 KernelSU-Next GKI 需安装apk以激活root权限
-
-            **下载链接**: ${{ steps.upload.outputs.download_url }}
-
-            > WARNING! THESE BUILDS MAY NOT BOOTABLE, ONLY FLASH FOR TESTING PURPOSES ONLY IF THE DEVELOPER TOLD YOU.
+          name: "QyzROM_CHC_${{ needs.build.outputs.rom_version[0] }}"
+          tag: ${{ needs.build.outputs.rom_version[0] }}
+          bodyFile: release_body.md
