@@ -4,6 +4,7 @@ from typing import Literal
 import os
 import shutil
 
+from src.custom.BootPatch import BootPatch
 from src.custom.CscEditor import CscEditor
 from src.custom.Vbmeta import Vbmeta
 from src.image.ImageConverter import ImageConverter
@@ -36,6 +37,26 @@ def deal_with_avb():
     Vbmeta("vbmeta").deal_with().move2out()
     moveimg2project("AP", "vbmeta_system")
     Vbmeta("vbmeta_system").deal_with().move2out()
+
+
+def patch_lkm(
+    kmi: Literal[
+        "android12-5.10",
+        "android13-5.10",
+        "android13-5.15",
+        "android14-5.15",
+        "android14-6.1",
+        "android15-6.6",
+    ]
+):
+    """Patch lkm.img in AP folder"""
+    moveimg2project("AP", "init_boot")
+    BootPatch.patch(img_path=tikpath.img_path("init_boot"), kmi=kmi)
+    # rename the patched image to init_boot.img
+    for x in pathlib.Path(tikpath.output_path).iterdir():
+        if x.is_file() and x.name.startswith("kernelsu_patched"):
+            os.rename(x, tikpath.img_output_path("init_boot"))
+            myprinter.print_green(f"Renamed {x.name} -> init_boot.img")
 
 
 def replace_rec(private_resource: str):

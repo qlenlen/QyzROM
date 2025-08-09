@@ -45,6 +45,7 @@ prepare.unarchive(skip_zip=False, remove_tars=RUN_EXTRA_STEPS)
 general.deal_with_avb()
 
 # 2.2 内核替换
+# now it's 6.1 BKLYN GKI
 general.replace_kernel(PRIV_RESOURCE, WORK)
 
 # 2.3 替换twrp

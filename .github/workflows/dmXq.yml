@@ -110,6 +110,7 @@ jobs:
           NEW_ZIP_NAME="QyzROM_CHC_${{ env.ROM_VERSION }}_${{ env.MODEL }}.zip"
           mv "$ZIP_FILE" "qyz/UI7/$NEW_ZIP_NAME"
           RESPONSE=$(curl -s -F "file=@qyz/UI7/$NEW_ZIP_NAME" -F "token=${{ secrets.GOFILE_TOKEN }}" -F "folderId=${{ secrets.GOFILE_FOLDER_ID }}" "https://upload-eu-par.gofile.io/uploadFile")
+          URL=$(echo "$RESPONSE" | jq -r '.data.downloadPage')
           echo "download_url=$URL" >> $GITHUB_OUTPUT
 
   release:
