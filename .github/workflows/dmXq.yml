@@ -109,8 +109,7 @@ jobs:
           fi
           NEW_ZIP_NAME="QyzROM_CHC_${{ env.ROM_VERSION }}_${{ env.MODEL }}.zip"
           mv "$ZIP_FILE" "qyz/UI7/$NEW_ZIP_NAME"
-          RESPONSE=$(curl -s -F "file=@qyz/UI7/$NEW_ZIP_NAME" -F "token=${{ secrets.GOFILE_TOKEN }}" -F "folderId=dmXq" "https://upload-eu-par.gofile.io/uploadFile")
-          URL=$(echo "$RESPONSE" | jq -r '.data.downloadPage')
+          RESPONSE=$(curl -s -F "file=@qyz/UI7/$NEW_ZIP_NAME" -F "token=${{ secrets.GOFILE_TOKEN }}" -F "folderId=${{ secrets.GOFILE_FOLDER_ID }}" "https://upload-eu-par.gofile.io/uploadFile")
           echo "download_url=$URL" >> $GITHUB_OUTPUT
 
   release:
@@ -142,3 +141,4 @@ jobs:
           name: "QyzROM_CHC_${{ needs.build.outputs.rom_version[0] }}"
           tag: ${{ needs.build.outputs.rom_version[0] }}
           bodyFile: release_body.md
+
