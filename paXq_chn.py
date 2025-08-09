@@ -4,6 +4,10 @@ Samsung S25 Ultra 一键生成 QyzROM
 """
 
 import os
+import pathlib
+import shutil
+
+RUN_EXTRA_STEPS = os.getenv("RUN_EXTRA_STEPS") == "1"
 
 from src.custom.CscEditor import CscEditor, get_csc_fp, get_ff_fp
 from src.custom.ModuleDealer import ModuleDealer
@@ -37,7 +41,7 @@ ZIP_NAME = "S9380.zip"
 general.clean()
 
 # 1. 提取需要的文件
-prepare.unarchive(skip_zip=True)
+prepare.unarchive(skip_zip=False, remove_tars=RUN_EXTRA_STEPS)
 
 # 2. 分门别类处理镜像
 # 2.1 avb去除
@@ -50,7 +54,7 @@ pass
 pass
 
 # 2.4 处理vendor_boot
-general.deal_with_vboot(remove_encryption=False)
+general.deal_with_vboot(remove_encryption=True)
 
 # 2.5 处理optics
 general.moveimg2project("CSC", "optics")
@@ -65,16 +69,22 @@ general.moveimg2project("AP", "super")
 MyImage("super").unpack()
 qti_size = lp.get_qti_dynamic_partitions_size()
 device_size = lp.get_device_size()
+if RUN_EXTRA_STEPS:
+    MyImage("super").unlink()
 
 img_product = MyImage("product_a")
 img_product.unpack()
 ProductDealer("product_a", "pa3q").perform_slim("chn")
 img_product.pack_erofs().out2super()
+if RUN_EXTRA_STEPS:
+    img_product.unlink().rm_content()
 
 img_vendor = MyImage("vendor_a")
 img_vendor.unpack()
-VendorDealer(is_aonly=False).fill_mount_point().remove_avb()
+VendorDealer(is_aonly=False).fill_mount_point().remove_avb().remove_encryption()
 img_vendor.pack_erofs().out2super()
+if RUN_EXTRA_STEPS:
+    img_vendor.unlink().rm_content()
 
 img_system = MyImage("system_a")
 img_system.unpack()
@@ -93,6 +103,9 @@ FFEditor.from_toml(
 
 img_system.pack_ext().out2super()
 
+if RUN_EXTRA_STEPS:
+    img_system.unlink().rm_content()
+
 MyImage("system_ext_a").move2super()
 MyImage("odm_a").move2super()
 MyImage("system_dlkm_a").move2super()
@@ -100,6 +113,14 @@ MyImage("vendor_dlkm_a").move2super()
 
 sh = lp.make_sh(tikpath.super, device_size, qti_size, SuperType.VAB)
 lp.cook(sh, tikpath.super)
+# 清理super目录 只保留super.img
+if RUN_EXTRA_STEPS:
+    for item in pathlib.Path(tikpath.super).iterdir():
+        if not item.name.startswith("super"):
+            if not item.is_dir():
+                item.unlink()
+                myprinter.print_cyan(f"{item.name} removed from super directory")
+ImageConverter(f"{tikpath.super}/super.img").lz4_compress(need_remove_old=True)
 
 # 3. 打包
 prepare.archive(ZIP_NAME)
