@@ -118,17 +118,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Generate release body
-        id: genbody
         run: |
           echo "这是一个自动构建的ROM，适用于 S23 系列以下机型：" > release_body.md
-          for i in 0 1 2; do
-            eval name="\${{ needs.build.outputs.device_name[$i] }}"
-            eval url="\${{ needs.build.outputs.download_url[$i] }}"
-            echo "" >> release_body.md
-            echo "**$name**" >> release_body.md
-            echo "下载链接: $url" >> release_body.md
-            echo "" >> release_body.md
-          done
+          echo "" >> release_body.md
+          echo "**${{ needs.build.outputs.device_name[0] }}**" >> release_body.md
+          echo "下载链接: ${{ needs.build.outputs.download_url[0] }}" >> release_body.md
+          echo "" >> release_body.md
+          echo "**${{ needs.build.outputs.device_name[1] }}**" >> release_body.md
+          echo "下载链接: ${{ needs.build.outputs.download_url[1] }}" >> release_body.md
+          echo "" >> release_body.md
+          echo "**${{ needs.build.outputs.device_name[2] }}**" >> release_body.md
+          echo "下载链接: ${{ needs.build.outputs.download_url[2] }}" >> release_body.md
           echo "" >> release_body.md
           echo "内核为 KernelSU-Next GKI 需安装 apk 以激活 root 权限" >> release_body.md
           echo "" >> release_body.md
