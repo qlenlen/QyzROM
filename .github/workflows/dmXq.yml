@@ -65,7 +65,7 @@ jobs:
       - name: Set up build environment
         run: |
           sudo apt-get -y update
-          sudo apt-get -y install curl xxd patchelf flex lz4 cpio tar zip jq
+          sudo apt-get -y install curl xxd patchelf flex lz4 cpio tar zip jq e2fsprogs android-sdk-libsparse-utils
           git config --global user.name "github-actions[bot]"
           git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
@@ -179,4 +179,5 @@ jobs:
           tag: ${{ steps.gen.outputs.rom_version }}
           bodyFile: release_body.md
           token: ${{ secrets.GITHUB_TOKEN }}
+
 
