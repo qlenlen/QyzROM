@@ -38,7 +38,7 @@ ZIP_NAME = "S9180.zip"
 general.clean()
 
 # 1. 提取需要的文件
-prepare.unarchive(skip_zip=False, remove_tars=RUN_EXTRA_STEPS)
+prepare.unarchive(skip_zip=not RUN_EXTRA_STEPS, remove_tars=RUN_EXTRA_STEPS)
 
 # 2. 分门别类处理镜像
 # 2.1 avb去除
