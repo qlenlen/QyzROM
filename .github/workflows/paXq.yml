@@ -20,6 +20,9 @@ jobs:
           - model: SM-S9360
             name: S25+ (SM-S9360)
             serial: R5CY10P754D
+          - model: SM-S9370
+            name: S25e (SM-S9370)
+            serial: R5CY436Q20X
           - model: SM-S9380
             name: S25 Ultra (SM-S9380)
             serial: R5CY13677GE
@@ -181,5 +184,6 @@ jobs:
           tag: ${{ steps.gen.outputs.rom_version }}
           bodyFile: release_body.md
           token: ${{ secrets.GITHUB_TOKEN }}
+
 
 
