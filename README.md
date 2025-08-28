@@ -1,5 +1,7 @@
 # QyzROM
 
+# 自动构建存在未知问题，镜像auth fail暂未解决，请勿刷写！
+
 ## 项目简介
 
 QyzROM 是一个专为三星设备设计的 OneUI 官改 ROM 在线自动化制作平台，灵感源自 [UN1CA](https://github.com/salvogiangri/UN1CA)
@@ -33,3 +35,4 @@ QyzROM 是一个专为三星设备设计的 OneUI 官改 ROM 在线自动化制�
 
 - 仓库仅作流程展示，实际封装脚本及工具未公开
 - 所有内容仅供技术交流与学习使用
+
