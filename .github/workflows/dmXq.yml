@@ -1,4 +1,4 @@
-name: Build QyzROM for S23 Series (Fedora42 container)
+name: Build QyzROM for S23 Series
 
 permissions:
   contents: write
@@ -7,48 +7,9 @@ on:
   workflow_dispatch:
 
 jobs:
-  prepare-host:
-    name: Prepare host and free up disk (runs on host)
+  build:
+    name: Build for ${{ matrix.device.name }}
     runs-on: ubuntu-latest
-    outputs:
-      cleaned: "true"
-    steps:
-      - name: Checkout (shallow) - optional
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 1
-          submodules: false
-
-      - name: Free disk space (1/2) - host
-        uses: jlumbroso/free-disk-space@main
-        with:
-          tool-cache: true
-
-      - name: Free disk space (2/2) - host
-        uses: rokibhasansagar/slimhub_actions@main
-
-      - name: Extra host cleanup (best-effort)
-        run: |
-          echo "Disk usage before manual cleanup:"
-          df -h /
-          sudo du -sh /opt/hostedtoolcache || true
-          # Best-effort removals (may require sudo)
-          sudo rm -rf /opt/hostedtoolcache/* || true
-          sudo rm -rf /home/runner/.cache/pip/* || true
-          sudo rm -rf /home/runner/.cache/* || true
-          sudo rm -rf /usr/share/dotnet/* || true
-          echo "Disk usage after manual cleanup:"
-          df -h /
-
-      - name: Mark host cleaned
-        run: echo "cleaned=true" >> "$GITHUB_OUTPUT"
-
-  build-in-fedora:
-    name: Build for ${{ matrix.device.name }} (inside Fedora 42 container)
-    needs: prepare-host
-    runs-on: ubuntu-latest
-    container:
-      image: fedora:42
     strategy:
       fail-fast: false
       matrix:
@@ -69,22 +30,12 @@ jobs:
       DEVICE_SERIAL: ${{ matrix.device.serial }}
 
     steps:
-      - name: Set up build environment (Fedora)
-        run: |
-          # install system deps commonly used by your build
-          sudo dnf -y upgrade || true
-          sudo dnf -y install curl lz4 cpio tar zip jq git || true
-          sudo dnf clean all || true
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
-    
       - name: Checkout repo
         uses: actions/checkout@v4
         with:
           submodules: recursive
-          fetch-depth: 1
 
-      - name: Checkout dependency repo into qyz
+      - name: Checkout another repo
         uses: actions/checkout@v4
         with:
           repository: qlenlen/TIK_mine
@@ -92,24 +43,38 @@ jobs:
           token: ${{ secrets.TOKEN }}
           path: qyz
           submodules: recursive
-          fetch-depth: 1
 
-      - name: Set up Python (optional, ensures python toolchain)
+      - name: Free disk space (1/2)
+        uses: jlumbroso/free-disk-space@main
+        with:
+          tool-cache: true
+
+      - name: Free disk space (2/2)
+        uses: rokibhasansagar/slimhub_actions@main
+
+      - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
 
-      - name: Install Python dependencies for repo
+      - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r qyz/requirements.txt
+
+      - name: Set up build environment
+        run: |
+          sudo apt-get -y update
+          sudo apt-get -y install curl xxd patchelf flex lz4 cpio tar zip jq
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
       - name: Download firmware
         run: |
           git clone https://github.com/keklick1337/gnsf.git
           cd gnsf
           mkdir -p ../qyz/UI7
-          python -m pip install -r requirements.txt
+          pip install -r requirements.txt
           ROM_VERSION=$(./gnsf.py -m "$MODEL" -r CHC check | grep -oP 'Firmware:\s*\K\S+' | cut -d'/' -f1)
           echo "ROM Version: $ROM_VERSION"
           echo "ROM_VERSION=$ROM_VERSION" >> "$GITHUB_ENV"
@@ -164,7 +129,7 @@ jobs:
 
   release:
     name: Create unified release
-    needs: build-in-fedora
+    needs: build
     runs-on: ubuntu-latest
     steps:
       - name: Download all release infos
@@ -214,5 +179,6 @@ jobs:
           tag: ${{ steps.gen.outputs.rom_version }}
           bodyFile: release_body.md
           token: ${{ secrets.GITHUB_TOKEN }}
+
 
 
