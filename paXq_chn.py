@@ -45,10 +45,10 @@ prepare.unarchive(skip_zip=not RUN_EXTRA_STEPS, remove_tars=RUN_EXTRA_STEPS)
 general.deal_with_avb()
 
 # 2.2 内核替换
-# now it's 6.6.34 lkm
+# now it's 6.6.77 lkm
 general.replace_kernel(PRIV_RESOURCE, WORK)
 # 补充 进行ksu-lkm修补
-general.patch_lkm("android15-6.6")
+# general.patch_lkm("android15-6.6")
 
 # 2.3 替换twrp
 pass
@@ -75,22 +75,22 @@ img_product = MyImage("product_a")
 img_product.unpack()
 ProductDealer("product_a", DEVICE).perform_slim("chn")
 img_product.pack_erofs().out2super()
-if RUN_EXTRA_STEPS:
-    img_product.unlink().rm_content()
+img_product.unlink().rm_content()
 
 img_vendor = MyImage("vendor_a")
 img_vendor.unpack()
+
 VendorDealer(is_aonly=False).fill_mount_point().remove_avb().remove_encryption()
 img_vendor.pack_erofs().out2super()
-if RUN_EXTRA_STEPS:
-    img_vendor.unlink().rm_content()
+img_vendor.unlink().rm_content()
 
 img_system = MyImage("system_a")
 img_system.unpack()
 SystemDealer("system_a", "pa3q").perform_slim("chn")
 
 ModuleDealer("Binary", is_vab=True).perform_task()
-ModuleDealer("Fonts_V2", is_vab=True).perform_task()
+# OneUI8
+ModuleDealer("Fonts", is_vab=True).perform_task()
 ModuleDealer("Preload", is_vab=True).perform_task()
 ModuleDealer("OneDesign", is_vab=True).perform_task()
 ModuleDealer("TgyStuff", is_vab=True).perform_task()
@@ -122,4 +122,5 @@ if RUN_EXTRA_STEPS:
 ImageConverter(f"{tikpath.super}/super.img").lz4_compress(need_remove_old=True)
 
 # 3. 打包
-prepare.archive(ZIP_NAME)
+if RUN_EXTRA_STEPS:
+    prepare.archive(ZIP_NAME, only_tar=not RUN_EXTRA_STEPS)

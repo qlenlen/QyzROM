@@ -51,7 +51,7 @@ general.replace_kernel(PRIV_RESOURCE, WORK)
 general.patch_lkm("android13-5.15")
 
 # 2.3 替换twrp
-general.replace_rec(PRIV_RESOURCE)
+# general.replace_rec(PRIV_RESOURCE)
 
 # 2.4 处理vendor_boot
 general.deal_with_vboot()
