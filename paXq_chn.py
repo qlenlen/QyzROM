@@ -122,5 +122,4 @@ if RUN_EXTRA_STEPS:
 ImageConverter(f"{tikpath.super}/super.img").lz4_compress(need_remove_old=True)
 
 # 3. 打包
-if RUN_EXTRA_STEPS:
-    prepare.archive(ZIP_NAME, only_tar=not RUN_EXTRA_STEPS)
+prepare.archive(ZIP_NAME, only_tar=not RUN_EXTRA_STEPS)
