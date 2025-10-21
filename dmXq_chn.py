@@ -51,7 +51,7 @@ general.replace_kernel(PRIV_RESOURCE, WORK)
 general.patch_lkm("android13-5.15")
 
 # 2.3 替换twrp
-# general.replace_rec(PRIV_RESOURCE)
+general.replace_rec(PRIV_RESOURCE)
 
 # 2.4 处理vendor_boot
 general.deal_with_vboot()
@@ -75,8 +75,7 @@ img_vendor = MyImage("vendor")
 img_vendor.unpack()
 VendorDealer().perform_slim()
 img_vendor.pack_erofs().out2super()
-if RUN_EXTRA_STEPS:
-    img_vendor.unlink().rm_content()
+img_vendor.unlink().rm_content()
 
 img_system = MyImage("system")
 img_system.unpack()
