@@ -55,6 +55,9 @@ jobs:
 
       # ⚠️ 容器内无需 free-disk-space，且该 action 在 container 下无效
 
+      - name: Disk usage
+        run: df -h
+
       - name: Install system dependencies (Fedora)
         run: |
           dnf -y update
