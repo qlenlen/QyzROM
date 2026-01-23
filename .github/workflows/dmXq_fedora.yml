@@ -34,6 +34,11 @@ jobs:
       DEVICE_SERIAL: ${{ matrix.device.serial }}
 
     steps:
+      - name: Install git first (required for checkout)
+        run: |
+          dnf -y update
+          dnf -y install git
+    
       - name: Checkout repo
         uses: actions/checkout@v4
         with:
