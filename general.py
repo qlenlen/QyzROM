@@ -19,7 +19,18 @@ tikpath = TikPath()
 myprinter = MyPrinter()
 
 
-def moveimg2project(folder: Literal["AP", "BL", "CSC"], img_name: str) -> str:
+def copyimg2project(img_name: str,folder: str="images") -> str:
+    """Copy from extract folder to project root
+    Return the dest path of the image"""
+    src = f"{tikpath.project_path}/{folder}/{img_name}.img"
+    dest = f"{tikpath.project_path}/{img_name}.img"
+    if os.path.exists(dest):
+        os.remove(dest)
+    shutil.copy(src, dest)
+    return f"{tikpath.project_path}/{img_name}.img"
+
+
+def moveimg2project(img_name: str, folder: str = "images") -> str:
     """Move from extract folder to project root
     Return the dest path of the image"""
     src = f"{tikpath.project_path}/{folder}/{img_name}.img"
@@ -33,9 +44,9 @@ def moveimg2project(folder: Literal["AP", "BL", "CSC"], img_name: str) -> str:
 def deal_with_avb():
     """Move vbmeta and vbmeta_system to project root
     Deal with them and move them to out folder"""
-    moveimg2project("BL", "vbmeta")
+    copyimg2project("vbmeta")
     Vbmeta("vbmeta").deal_with().move2out()
-    moveimg2project("AP", "vbmeta_system")
+    copyimg2project("vbmeta_system")
     Vbmeta("vbmeta_system").deal_with().move2out()
 
 
@@ -47,10 +58,11 @@ def patch_lkm(
         "android14-5.15",
         "android14-6.1",
         "android15-6.6",
-    ]
+        "android16-6.12",
+    ],
 ):
     """Patch lkm.img in AP folder"""
-    moveimg2project("AP", "init_boot")
+    copyimg2project("init_boot")
     BootPatch.patch(img_path=tikpath.img_path("init_boot"), kmi=kmi)
     # rename the patched image to init_boot.img
     for x in pathlib.Path(tikpath.output_path).iterdir():
@@ -70,7 +82,7 @@ def replace_rec(private_resource: str):
 def deal_with_vboot(remove_encryption: bool = True):
     """Move vendor_boot.img to project root
     Deal with it and move it to out folder"""
-    moveimg2project("AP", "vendor_boot")
+    copyimg2project("images", "vendor_boot")
     with VendorBoot() as vboot:
         vboot.unpack()
         vboot.remove_avb()
@@ -112,9 +124,9 @@ def clean():
     """Clean the project folder"""
     for x in pathlib.Path(tikpath.project_path).iterdir():
         if x.is_dir():
-            if x.name == "config" or x.name == "TI_out" or x.name == "tars":
+            if x.name == "config" or x.name == "TI_out":
                 continue
             shutil.rmtree(x)
         else:
-            if not x.suffix == ".zip":
+            if not x.suffix == ".zip" and not x.suffix == ".tgz":
                 x.unlink()
