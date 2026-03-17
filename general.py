@@ -82,13 +82,13 @@ def replace_rec(private_resource: str):
 def deal_with_vboot(remove_encryption: bool = True):
     """Move vendor_boot.img to project root
     Deal with it and move it to out folder"""
-    copyimg2project("images", "vendor_boot")
+    copyimg2project("vendor_boot")
     with VendorBoot() as vboot:
         vboot.unpack()
         vboot.remove_avb()
         if remove_encryption:
             vboot.remove_encryption()
-        vboot.fill_mount_point()
+        # vboot.fill_mount_point()
         vboot.repack()
 
 

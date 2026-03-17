@@ -14,20 +14,16 @@ jobs:
       fail-fast: false
       matrix:
         device:
-          - model: SM-S9110
-            name: S23 (SM-S9110)
-            serial: RFCW81DHWWP
-          - model: SM-S9160
-            name: S23+ (SM-S9160)
-            serial: R5CW23450PZ
-          - model: SM-S9180
-            name: S23 Ultra (SM-S9180)
-            serial: R5CW139E77Z
+          - model: pudding
+            name: Xiaomi 17
+          - model: pandora
+            name: Xiaomi 17 Pro
+          - model: popsicle
+            name: Xiaomi 17 Pro Max
 
     env:
       MODEL: ${{ matrix.device.model }}
       DEVICE_NAME: ${{ matrix.device.name }}
-      DEVICE_SERIAL: ${{ matrix.device.serial }}
 
     steps:
       - name: Checkout repo
@@ -39,7 +35,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: qlenlen/TIK_mine
-          ref: master
+          ref: mi
           token: ${{ secrets.TOKEN }}
           path: qyz
           submodules: recursive
@@ -57,49 +53,44 @@ jobs:
         with:
           python-version: '3.12'
 
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
       - name: Install dependencies
         run: |
-          python -m pip install --upgrade pip
-          pip install -r qyz/requirements.txt
+          uv sync
 
       - name: Set up build environment
         run: |
           sudo apt-get -y update
-          sudo apt-get -y install curl xxd patchelf flex lz4 cpio tar zip jq
+          sudo apt-get -y install curl xxd patchelf flex lz4 cpio tar zip jq pigz zstd
           git config --global user.name "github-actions[bot]"
           git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
       - name: Download firmware
         run: |
-          git clone https://github.com/keklick1337/gnsf.git
-          cd gnsf
-          mkdir -p ../qyz/UI7
-          pip install -r requirements.txt
-          ROM_VERSION=$(./gnsf.py -m "$MODEL" -r CHC check | grep -oP 'Firmware:\s*\K\S+' | cut -d'/' -f1)
-          echo "ROM Version: $ROM_VERSION"
-          echo "ROM_VERSION=$ROM_VERSION" >> "$GITHUB_ENV"
-          ./gnsf.py -m "$MODEL" -r CHC -s "$DEVICE_SERIAL" download -O ../qyz/UI7
-          ls -l ../qyz/UI7
-
+          mkdir qyz/TEST
+          uv run src/custom/download_rom.py popsicle --method fastboot --out qyz/TEST
+        
       - name: Build ROM
         env:
           RUN_EXTRA_STEPS: "1"
         run: |
           cd qyz
           export PYTHONPATH=$(pwd)
-          python src/device/dmXq_chn.py
+          python src/device/popsicle.py
 
       - name: Upload to GoFile
         id: upload
         run: |
-          ZIP_FILE=$(find qyz/UI7 -maxdepth 1 -type f -name "*.zip" | head -n 1)
+          ZIP_FILE=$(find qyz/TEST -maxdepth 1 -type f -name "*.zip" | head -n 1)
           if [ -z "$ZIP_FILE" ]; then
             echo "No ZIP file found!"
             exit 1
           fi
-          NEW_ZIP_NAME="QyzROM_CHC_${{ env.ROM_VERSION }}_${{ env.MODEL }}.zip"
-          mv "$ZIP_FILE" "qyz/UI7/$NEW_ZIP_NAME"
-          RESPONSE=$(curl -s -F "file=@qyz/UI7/$NEW_ZIP_NAME" -F "token=${{ secrets.GOFILE_TOKEN }}" -F "folderId=${{ secrets.GOFILE_FOLDER_ID }}" "https://upload-eu-par.gofile.io/uploadFile")
+          NEW_ZIP_NAME="QyzROM_${{ env.MODEL }}.zip"
+          mv "$ZIP_FILE" "qyz/TEST/$NEW_ZIP_NAME"
+          RESPONSE=$(curl -s -F "file=@qyz/TEST/$NEW_ZIP_NAME" -F "token=${{ secrets.GOFILE_TOKEN }}" -F "folderId=${{ secrets.GOFILE_FOLDER_ID }}" "https://upload-eu-par.gofile.io/uploadFile")
           echo "Upload response: $RESPONSE"
           URL=$(echo "$RESPONSE" | jq -r '.data.downloadPage')
           if [ -z "$URL" ] || [ "$URL" = "null" ]; then
@@ -113,12 +104,10 @@ jobs:
           name='${{ env.DEVICE_NAME }}'
           url='${{ steps.upload.outputs.download_url }}'
           model='${{ env.MODEL }}'
-          rom='${{ env.ROM_VERSION }}'
           {
             printf "name=%q\n" "$name"
             printf "url=%q\n" "$url"
             printf "model=%q\n" "$model"
-            printf "rom_version=%q\n" "$rom"
           } > "release-info-${{ env.MODEL }}.env"
 
       - name: Upload release info artifact
@@ -143,7 +132,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          echo "这是一个自动构建的ROM，适用于 S23 系列以下机型：" > release_body.md
+          echo "这是一个自动构建的ROM，适用于 Xiaomi 17 系列以下机型：" > release_body.md
           first=1
           shopt -s nullglob
           for f in release-info-*.env; do
@@ -175,7 +164,7 @@ jobs:
         with:
           allowUpdates: true
           removeArtifacts: true
-          name: QyzROM_CHC_${{ steps.gen.outputs.rom_version }}
+          name: QyzROM_${{ steps.gen.outputs.rom_version }}
           tag: ${{ steps.gen.outputs.rom_version }}
           bodyFile: release_body.md
           token: ${{ secrets.GITHUB_TOKEN }}
