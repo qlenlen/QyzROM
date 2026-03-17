@@ -58,7 +58,9 @@ jobs:
 
       - name: Install dependencies
         run: |
+          cd qyz
           uv sync
+          cd ..
 
       - name: Set up build environment
         run: |
