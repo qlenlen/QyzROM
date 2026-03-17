@@ -72,7 +72,7 @@ jobs:
       - name: Download firmware
         run: |
           mkdir qyz/TEST
-          uv run src/custom/download_rom.py popsicle --method fastboot --out qyz/TEST
+          uv run qyz/src/custom/download_rom.py {{ env.MODEL }} --method fastboot --out qyz/TEST
         
       - name: Build ROM
         env:
