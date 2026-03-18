@@ -114,7 +114,7 @@ MyImage("odm_a").move2super()
 MyImage("system_dlkm_a").move2super()
 MyImage("vendor_dlkm_a").move2super()
 
-sh = lp.make_sh(tikpath.super, device_size, qti_size)
+sh = lp.make_sh(tikpath.super, device_size, qti_size, super_type=lp.SuperType.VAB)
 lp.cook(sh, tikpath.super)
 
 # 清理super目录 只保留super.img
