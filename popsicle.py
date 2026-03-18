@@ -110,9 +110,9 @@ if RUN_EXTRA_STEPS:
     img_system_ext.unlink().rm_content()
 
 # untouched partitions
-MyImage("odm").move2super()
-MyImage("system_dlkm").move2super()
-MyImage("vendor_dlkm").move2super()
+MyImage("odm_a").move2super()
+MyImage("system_dlkm_a").move2super()
+MyImage("vendor_dlkm_a").move2super()
 
 sh = lp.make_sh(tikpath.super, device_size, qti_size)
 lp.cook(sh, tikpath.super)
