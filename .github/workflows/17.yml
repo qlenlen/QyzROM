@@ -40,18 +40,13 @@ jobs:
           path: qyz
           submodules: recursive
 
-      - name: Free disk space (1/2)
-        uses: jlumbroso/free-disk-space@main
-        with:
-          tool-cache: true
+      # - name: Free disk space (1/2)
+      #   uses: jlumbroso/free-disk-space@main
+      #   with:
+      #     tool-cache: true
 
-      - name: Free disk space (2/2)
-        uses: rokibhasansagar/slimhub_actions@main
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
+      # - name: Free disk space (2/2)
+      #   uses: rokibhasansagar/slimhub_actions@main
 
       - name: Install uv
         uses: astral-sh/setup-uv@v5
@@ -73,7 +68,7 @@ jobs:
         run: |
           cd qyz
           mkdir TEST
-          uv run src/custom/download_rom.py {{ env.MODEL }} --method fastboot --out TEST
+          uv run src/custom/download_rom.py ${{ env.MODEL }} --method fastboot --out TEST
           cd ..
         
       - name: Build ROM
