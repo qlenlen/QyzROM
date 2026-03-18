@@ -71,8 +71,10 @@ jobs:
 
       - name: Download firmware
         run: |
-          mkdir qyz/TEST
-          uv run qyz/src/custom/download_rom.py {{ env.MODEL }} --method fastboot --out qyz/TEST
+          cd qyz
+          mkdir TEST
+          uv run src/custom/download_rom.py {{ env.MODEL }} --method fastboot --out TEST
+          cd ..
         
       - name: Build ROM
         env:
@@ -80,7 +82,7 @@ jobs:
         run: |
           cd qyz
           export PYTHONPATH=$(pwd)
-          python src/device/popsicle.py
+          uv run src/device/popsicle.py
 
       - name: Upload to GoFile
         id: upload
