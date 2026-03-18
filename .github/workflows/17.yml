@@ -1,4 +1,4 @@
-name: Build QyzROM for S23 Series
+name: Build QyzROM for Xiaomi 17 Series
 
 permissions:
   contents: write
